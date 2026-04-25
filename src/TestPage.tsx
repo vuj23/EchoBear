@@ -1,5 +1,5 @@
 import { useState } from 'react'
-import { generateStory, generateImages } from './api/gemini'
+import { generateStory, generateImages, preloadImages } from './api/gemini'
 import type { StoryJSON } from './types'
 
 export default function TestPage() {
@@ -29,9 +29,14 @@ export default function TestPage() {
     try {
       const result = await generateStory(prompt.trim(), level)
       setStory(result)
-      const images = await generateImages(result.scenes.map(scene => scene.imagePrompt))
-      setSceneImages(images)
       setStoryStatus('success')
+      const urls = await generateImages(result.scenes.map(scene => scene.imagePrompt))
+      setSceneImages(new Array(urls.length).fill(null))
+      // Load one at a time — wait for each to finish before starting the next
+      for (let i = 0; i < urls.length; i++) {
+        const [loaded] = await preloadImages([urls[i]])
+        setSceneImages(prev => { const next = [...prev]; next[i] = loaded; return next })
+      }
     } catch (e) {
       setStoryStatus('error')
       setStoryError(e instanceof Error ? e.message : String(e))
@@ -41,8 +46,7 @@ export default function TestPage() {
   }
 
   async function handleTestImage() {
-    const imagePrompt =
-      story?.scenes[0]?.imagePrompt || `${prompt.trim() || 'A friendly bear reading'} in children storybook style`
+    const imagePrompt = `${prompt.trim() || 'A friendly bear reading'}, children's book illustration style`
 
     setImageLoading(true)
     setImageStatus('idle')
@@ -51,9 +55,13 @@ export default function TestPage() {
 
     try {
       const images = await generateImages([imagePrompt])
-      const firstImage = images[0]
-      if (!firstImage) throw new Error('Image URL was empty')
-      setImagePreview(firstImage)
+      const url = images[0]
+      if (!url) throw new Error('Image URL was empty')
+
+      const [loaded] = await preloadImages([url])
+      if (!loaded) throw new Error('Image failed to load — check console for details')
+
+      setImagePreview(loaded)
       setImageStatus('success')
     } catch (e) {
       setImageStatus('error')
@@ -134,7 +142,7 @@ export default function TestPage() {
         <div style={{ background: '#ecfeff', padding: 10, borderRadius: 10, fontSize: 14 }}>
           Image test:{' '}
           <strong>
-            {imageStatus === 'success' ? 'PASS' : imageStatus === 'error' ? 'FAIL' : 'Not run yet'}
+            {imageLoading ? 'Waiting for Pollinations (up to 45s)…' : imageStatus === 'success' ? 'PASS' : imageStatus === 'error' ? 'FAIL' : 'Not run yet'}
           </strong>
         </div>
         {imageError && (
@@ -160,10 +168,11 @@ export default function TestPage() {
                       <img
                         src={sceneImages[i] ?? ''}
                         alt={`Scene ${i + 1}`}
+                        referrerPolicy="no-referrer"
                         style={{ width: '100%', height: '100%', minHeight: 210, objectFit: 'cover', display: 'block' }}
                       />
                     ) : (
-                      '📝'
+                      '⏳'
                     )}
                   </div>
                   <div style={{ padding: 16 }}>

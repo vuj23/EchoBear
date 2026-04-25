@@ -170,13 +170,63 @@ export function generateImages(prompts: string[]): Promise<(string | null)[]> {
   return Promise.resolve(prompts.map(p => buildPollinationsUrl(p)))
 }
 
-function buildPollinationsUrl(prompt: string): string {
-  const safePrompt = prompt.trim() || 'A cheerful children storybook scene with friendly animals'
-  const styled = `${safePrompt}, children's book illustration, colorful, friendly, cute cartoon, safe for kids, bright colors, no text`
-  const seed = Math.abs(hashStr(safePrompt)) % 99999
+const POLLINATIONS_BASES = [
+  'https://image.pollinations.ai/prompt/',
+  'https://pollinations.ai/p/',
+]
 
-  // Use the public image endpoint for robust browser rendering in scene cards.
-  return `https://image.pollinations.ai/prompt/${encodeURIComponent(styled)}?width=768&height=576&seed=${seed}&nologo=true`
+const POLLINATIONS_KEY = import.meta.env.VITE_POLLINATIONS_API_KEY as string | undefined
+
+function buildPollinationsUrl(prompt: string, baseIndex = 0): string {
+  const safePrompt = prompt.trim() || 'A cheerful children storybook scene with friendly animals'
+  const core = safePrompt.length > 180 ? safePrompt.slice(0, 180) : safePrompt
+  const styled = `${core}, children's book illustration, colorful, friendly, cute, no text`
+  const seed = Math.abs(hashStr(safePrompt)) % 99999
+  const base = POLLINATIONS_BASES[baseIndex % POLLINATIONS_BASES.length]
+  const token = POLLINATIONS_KEY ? `&token=${encodeURIComponent(POLLINATIONS_KEY)}` : ''
+  return `${base}${encodeURIComponent(styled)}?width=768&height=576&seed=${seed}&model=flux&nologo=true${token}`
+}
+
+function loadImageTag(url: string, baseIndex = 0): Promise<string> {
+  // Try the given base URL, then fall back to the alternate base on error
+  const finalUrl = baseIndex === 0 ? url : url.replace(POLLINATIONS_BASES[0], POLLINATIONS_BASES[1])
+  return new Promise((resolve, reject) => {
+    const img = new Image()
+    img.referrerPolicy = 'no-referrer'
+    const t = setTimeout(() => { img.src = ''; reject(new Error('Timeout')) }, 50_000)
+    img.onload = () => { clearTimeout(t); resolve(finalUrl) }
+    img.onerror = () => {
+      clearTimeout(t)
+      if (baseIndex === 0) {
+        // Retry with alternate Pollinations base after a short pause
+        setTimeout(() => loadImageTag(url, 1).then(resolve, reject), 1500)
+      } else {
+        reject(new Error('Image load failed on both endpoints'))
+      }
+    }
+    img.src = finalUrl
+  })
+}
+
+export async function fetchSceneImage(url: string, delayMs = 0): Promise<string | null> {
+  if (delayMs > 0) await new Promise(r => setTimeout(r, delayMs))
+  try {
+    return await loadImageTag(url)
+  } catch (e) {
+    console.warn('Scene image failed:', e)
+    return null
+  }
+}
+
+export async function preloadImages(urls: (string | null)[]): Promise<(string | null)[]> {
+  const results = await Promise.allSettled(
+    urls.map(url => (url ? loadImageTag(url) : Promise.resolve(null))),
+  )
+  return results.map((r, i) => {
+    if (r.status === 'fulfilled') return r.value
+    console.warn(`Image ${i} failed:`, (r as PromiseRejectedResult).reason)
+    return null
+  })
 }
 
 function hashStr(s: string): number {
