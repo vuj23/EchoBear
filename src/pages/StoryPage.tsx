@@ -1,51 +1,97 @@
 /* StoryPage.tsx */
 import styles from './Story.module.css'
 import navStyles from './Home.module.css'
-import { useState } from 'react'
+import { useMemo, useState } from 'react'
 import { useNavigate } from 'react-router-dom'
+
 type NavItem = 'home' | 'library' | 'profile'
 
-export default function StoryPage() {
+type StoryCard = {
+  lines: string[]
+}
 
+// Temporary local story data (swap this later for generated story content)
+const STORY: StoryCard[] = [
+  { lines: ['Once upon a time there was a little red flower.', 'She lived in a garden. She loved to bloom.'] },
+  { lines: ['One sunny day, a busy bee flew by.', '“Hello, little flower!” buzzed the bee.'] },
+  { lines: ['The flower stood tall and brave.', 'She shared her sweet nectar with a smile.'] },
+]
+
+export default function StoryPage() {
   const [active, setActive] = useState<NavItem>('home')
   const navigate = useNavigate()
+
+  const [pageIndex, setPageIndex] = useState(0)
+
+  const page = useMemo(() => STORY[pageIndex] ?? STORY[0], [pageIndex])
+  const isLastPage = pageIndex >= STORY.length - 1
+
+  const goNext = () => {
+    setPageIndex((i) => Math.min(i + 1, STORY.length - 1))
+  }
+
   return (
-    <div> 
-        <div className={styles.container}>
+    <div>
+      <div className={styles.container}>
         {/* 1. The Image Card */}
         <div className={styles.imageCard}>
-            <div className={styles.placeholderGrid}>
-            {/* This represents your transparent grid area */}
-            </div>
+          <div className={styles.placeholderGrid}>{/* This represents your transparent grid area */}</div>
         </div>
 
         {/* 2. The Content Area */}
         <div className={styles.contentRow}>
-            <div className={styles.textContent}>
-            <p className={styles.storyLine}>Once upon a time there was a little red flower.</p>
-            <p className={styles.storyLine}>She lived in a garden. She loved to bloom.</p>
-            </div>
+          <div className={styles.textContent}>
+            {page.lines.map((line, idx) => (
+              <p key={idx} className={styles.storyLine}>
+                {line}
+              </p>
+            ))}
+          </div>
 
-            {/* 3. The Next Button */}
-            <button className={styles.nextButton} aria-label="Next page">
+          {/* 3. The Next Button */}
+          <button
+            className={styles.nextButton}
+            aria-label="Next page"
+            type="button"
+            onClick={goNext}
+            disabled={isLastPage}
+            style={isLastPage ? { opacity: 0.5, cursor: 'not-allowed' } : undefined}
+          >
             <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="white" strokeWidth="3">
-                <path d="m9 18 6-6-6-6" strokeLinecap="round" strokeLinejoin="round"/>
+              <path d="m9 18 6-6-6-6" strokeLinecap="round" strokeLinejoin="round" />
             </svg>
-            </button>
+          </button>
         </div>
+      </div>
 
-        </div>
-        <footer className={navStyles.nav}>
-            <NavButton active={active === 'home'} onClick={() => {navigate('/') 
-                setActive('home')}} label="HOME" icon="home" />
-            <NavButton active={active === 'library'} onClick={() => {navigate('/library')
-                setActive('library')}} label="LIBRARY" icon="book" />
-            <NavButton active={active === 'profile'} onClick={() => {navigate('/profile')
-                setActive('profile')}} label="PROFILE" icon="user" />
-        </footer>
+      <footer className={navStyles.nav}>
+        <NavButton
+          active={active === 'home'}
+          onClick={() => {
+            navigate('/')
+            setActive('home')
+          }}
+          label="HOME"
+          icon="home"
+        />
+        <NavButton
+          active={active === 'library'}
+          onClick={() => {
+            setActive('library')
+          }}
+          label="LIBRARY"
+          icon="book"
+        />
+        <NavButton
+          active={active === 'profile'}
+          onClick={() => {
+            setActive('profile')
+          }}
+          label="PROFILE"
+          icon="user"
+        />
+      </footer>
     </div>
-
-    
   )
 }
 
@@ -53,11 +99,11 @@ function NavButton({
   active,
   label,
   icon,
-  onClick
+  onClick,
 }: {
   active: boolean
   label: string
-  icon: 'home' | 'book' | 'user',
+  icon: 'home' | 'book' | 'user'
   onClick?: () => void
 }) {
   return (

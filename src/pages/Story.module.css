@@ -1,0 +1,55 @@
+.container {
+  padding: 40px 10px;
+  display: flex;
+  background: #fbf2e8;
+  flex-direction: column;
+  gap: 30px;
+}
+
+.textContent {
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+}
+
+.imageCard {
+  width: 100%;
+  aspect-ratio: 16 / 7; /* Adjust based on your screenshot */
+  background: white;
+  border: 4px solid #E6D5B8; /* The tan border color */
+  border-radius: 40px;
+  overflow: hidden;
+}
+
+/* For the story text and button layout */
+.contentRow {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: 0 20px;
+}
+
+.storyLine {
+  font-size: 2rem;
+  font-weight: 700;
+  color: #8B6E4E; /* Dark tan/brown text */
+  margin: 5px 0;
+}
+
+.nextButton {
+  width: 70px;
+  height: 70px;
+  background-color: #82BDD0;
+  border: none;
+  border-radius: 50%;
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  box-shadow: 0 8px 20px rgba(130, 189, 208, 0.4);
+  transition: transform 0.2s;
+}
+
+.nextButton:hover {
+  transform: scale(1.05);
+}
