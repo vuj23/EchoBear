@@ -1,0 +1,164 @@
+.screen {
+  min-height: 100dvh;
+  background: #fbf2e8;
+  display: grid;
+  grid-template-rows: 1fr auto;
+}
+
+.main {
+  display: grid;
+  grid-template-columns: 1.05fr 0.95fr;
+  align-items: center;
+  gap: 48px;
+  padding: 56px 72px 24px;
+}
+
+.left {
+  display: grid;
+  justify-items: center;
+  align-content: center;
+  gap: 28px;
+}
+
+.card {
+  width: min(600px, 100%);
+  background: #fff7ee;
+  border: 4px solid #e8c8a6;
+  border-radius: 22px;
+  padding: 34px 20px;
+}
+
+.title {
+  margin: 0;
+  font-size: 46px;
+  line-height: 1.08;
+  letter-spacing: -0.01em;
+  color: #5a3b26;
+  font-weight: 800;
+  text-align: center;
+}
+
+.subtitle {
+  margin: 16px 0 0;
+  color: #c49a74;
+  font-size: 16px;
+  font-weight: 600;
+  text-align: center;
+}
+
+.micArea {
+  display: grid;
+  justify-items: center;
+  gap: 10px;
+}
+
+.micButton {
+  width: 104px;
+  height: 104px;
+  border-radius: 999px;
+  border: none;
+  background: #67bdd1;
+  color: #ffffff;
+  display: grid;
+  place-items: center;
+  cursor: pointer;
+}
+
+.micButton:active {
+  transform: translateY(2px);
+  box-shadow: 0 8px 0 rgba(36, 141, 160, 0.45);
+}
+
+
+
+.micIcon {
+  display: inline-grid;
+  place-items: center;
+}
+
+.tapText {
+  color: #a77c5e;
+  font-weight: 700;
+}
+
+.right {
+  display: grid;
+  justify-items: center;
+  align-items: center;
+}
+
+.logo {
+  width: min(560px, 92%);
+  height: auto;
+  display: block;
+}
+
+.nav {
+  height: 98px;
+  background: #ffffff;
+  border-top: 2px solid #e8c8a6;
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  align-items: center;
+  padding: 10px 28px;
+}
+
+.navItem {
+  appearance: none;
+  border: none;
+  background: transparent;
+  display: grid;
+  justify-items: center;
+  gap: 6px;
+  cursor: pointer;
+  padding: 10px 0;
+  color: #d0aa88;
+}
+
+.navItemActive {
+  color: #67bdd1;
+}
+
+.navIcon {
+  display: grid;
+  place-items: center;
+}
+
+.navLabel {
+  font-size: 12px;
+  letter-spacing: 0.12em;
+  font-weight: 800;
+}
+
+.navDot {
+  width: 4px;
+  height: 4px;
+  border-radius: 999px;
+  background: currentColor;
+}
+
+.navDotSpacer {
+  width: 4px;
+  height: 4px;
+  opacity: 0;
+}
+
+@media (max-width: 920px) {
+  .main {
+    grid-template-columns: 1fr;
+    padding: 32px 22px 16px;
+    gap: 26px;
+  }
+
+  .right {
+    order: -1;
+  }
+
+  .title {
+    font-size: 38px;
+  }
+
+  .card {
+    padding: 22px 22px;
+  }
+}
