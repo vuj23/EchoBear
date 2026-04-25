@@ -1,0 +1,6 @@
+{
+  "short_name": "MyProject",
+  "name": "My Web Application",
+  "display": "standalone",
+  "start_url": "/"
+}
