@@ -1,0 +1,96 @@
+.app {
+  max-width: 800px;
+  margin: 0 auto;
+  padding: 20px;
+  font-family: 'Comic Sans MS', cursive, sans-serif;
+  text-align: center;
+  background-color: #f5f5dc; /* Beige/cream background */
+  border-radius: 15px;
+  box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
+  color: #8b4513; /* Saddle brown text */
+}
+
+body {
+  background-color: #deb887; /* Burlywood background */
+  margin: 0;
+  padding: 20px;
+  font-family: 'Comic Sans MS', cursive, sans-serif;
+}
+
+h1 {
+  color: #654321; /* Dark brown */
+  font-size: 2.5em;
+  margin-bottom: 20px;
+  text-shadow: 2px 2px 4px rgba(0, 0, 0, 0.1);
+}
+
+p {
+  font-size: 24px;
+  line-height: 1.5;
+  color: #8b4513;
+}
+
+button {
+  font-size: 18px;
+  padding: 10px 20px;
+  margin: 20px;
+  background-color: #daa520; /* Goldenrod */
+  color: #ffffff;
+  border: none;
+  border-radius: 25px;
+  cursor: pointer;
+  box-shadow: 0 4px 8px rgba(0, 0, 0, 0.2);
+  transition: background-color 0.3s;
+}
+
+button:hover {
+  background-color: #b8860b; /* Dark goldenrod */
+}
+
+button:disabled {
+  background-color: #cccccc;
+  cursor: not-allowed;
+}
+
+input {
+  font-size: 18px;
+  padding: 10px;
+  margin: 10px;
+  border: 2px solid #daa520;
+  border-radius: 10px;
+  background-color: #fff8dc; /* Cornsilk */
+  color: #8b4513;
+  outline: none;
+}
+
+input:focus {
+  border-color: #b8860b;
+}
+
+span {
+  padding: 2px 4px;
+  border-radius: 3px;
+  background-color: #ffff00; /* Yellow highlight */
+  color: #8b4513;
+}
+
+.visual-aid {
+  font-size: 100px;
+  text-align: center;
+  margin-top: 50px;
+  margin-bottom: 20px;
+}
+
+.feedback {
+  font-size: 24px;
+  font-weight: bold;
+  color: #daa520;
+  text-align: center;
+}
+
+.teaching {
+  font-size: 20px;
+  color: #8b4513;
+  text-align: center;
+  font-style: italic;
+}
