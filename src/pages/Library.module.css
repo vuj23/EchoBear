@@ -1,0 +1,372 @@
+.screen {
+  min-height: 100dvh;
+  background: #fff7ec;
+  display: grid;
+  grid-template-rows: 1fr auto;
+}
+
+.container {
+  position: relative;
+  padding: 64px 99px;
+  overflow-y: auto;
+  display: flex;
+  flex-direction: column;
+  gap: 32px;
+}
+
+.heading {
+  font-family: 'Fredoka One', sans-serif;
+  font-size: 58px;
+  font-weight: 400;
+  line-height: 1.3;
+  color: #5c3a1e;
+  margin: 0;
+  text-align: left;
+}
+
+/* Stats Badge */
+.statsBadge {
+  position: absolute;
+  top: 48px;
+  right: 99px;
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  background: white;
+  border: 4px solid #e8c89a;
+  border-radius: 999px;
+  padding: 12px 28px;
+  width: 322px;
+  height: 111px;
+  z-index: 10;
+}
+
+.statsIcon {
+  width: 76px;
+  height: 76px;
+  background: #5bb5c0;
+  border-radius: 12px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 40px;
+  flex-shrink: 0;
+}
+
+.statsContent {
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+  flex: 1;
+}
+
+.statsNumber {
+  font-family: 'Fredoka One', sans-serif;
+  font-size: 39px;
+  font-weight: 400;
+  color: #5c3a1e;
+  line-height: 1.2;
+}
+
+.statsLabel {
+  font-family: 'Inter', sans-serif;
+  font-size: 16px;
+  font-weight: 700;
+  color: #c4976a;
+  text-transform: uppercase;
+  letter-spacing: 1.5px;
+}
+
+/* Stories Grid */
+.grid {
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  gap: 56px;
+  max-width: 1783px;
+  margin: 48px 0;
+}
+
+.storyCard {
+  background: white;
+  border: 4px solid #e8c89a;
+  border-radius: 36px;
+  padding: 32px;
+  display: flex;
+  flex-direction: column;
+  gap: 28px;
+  cursor: pointer;
+  transition: transform 0.2s, box-shadow 0.2s;
+}
+
+.storyCard:hover {
+  transform: translateY(-4px);
+  box-shadow: 0 8px 16px rgba(92, 58, 30, 0.1);
+}
+
+.storyImageArea {
+  width: 100%;
+  height: 180px;
+  border-radius: 20px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  position: relative;
+}
+
+/* Different background colors for story cards */
+.storyCard:nth-child(1) .storyImageArea {
+  background: #eef9fa;
+}
+
+.storyCard:nth-child(2) .storyImageArea {
+  background: #fdf4e0;
+}
+
+.storyCard:nth-child(3) .storyImageArea {
+  background: #eef9fa;
+}
+
+.storyCard:nth-child(4) .storyImageArea {
+  background: #fdf4e0;
+}
+
+.storyCard:nth-child(5) .storyImageArea {
+  background: #fff7ec;
+}
+
+.storyCard:nth-child(6) .storyImageArea {
+  background: #eef9fa;
+}
+
+.storyIcon {
+  width: 90px;
+  height: 90px;
+  border-radius: 20px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-family: 'Inter', sans-serif;
+  font-size: 56px;
+  font-weight: 900;
+  text-transform: lowercase;
+}
+
+/* Different icon colors for story cards */
+.storyCard:nth-child(1) .storyIcon {
+  background: #c8eff3;
+  color: #3a8f99;
+  border: 4px solid #5bb5c0;
+}
+
+.storyCard:nth-child(2) .storyIcon {
+  background: #f5e6b8;
+  color: #9a7020;
+  border: 4px solid #d4b48a;
+}
+
+.storyCard:nth-child(3) .storyIcon {
+  background: #c8eff3;
+  color: #3a8f99;
+  border: 4px solid #5bb5c0;
+}
+
+.storyCard:nth-child(4) .storyIcon {
+  background: #f5e6b8;
+  color: #9a7020;
+  border: 4px solid #d4b48a;
+}
+
+.storyCard:nth-child(5) .storyIcon {
+  background: #fff7ec;
+  color: #a07848;
+  border: 4px solid #e8c89a;
+}
+
+.storyCard:nth-child(6) .storyIcon {
+  background: #c8eff3;
+  color: #3a8f99;
+  border: 4px solid #5bb5c0;
+}
+
+.storyContent {
+  border-top: 2px solid #f5ead8;
+  padding-top: 20px;
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+}
+
+.storyTitle {
+  font-family: 'Inter', sans-serif;
+  font-size: 26px;
+  font-weight: 900;
+  color: #5c3a1e;
+  margin: 0;
+  line-height: 1.3;
+}
+
+.storyMeta {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  gap: 20px;
+}
+
+.storyDate {
+  font-family: 'Inter', sans-serif;
+  font-size: 16px;
+  font-weight: 700;
+  color: #c4976a;
+}
+
+.storyPages {
+  background: #fff7ec;
+  border: 2px solid #e8c89a;
+  border-radius: 999px;
+  padding: 6px 16px;
+  font-family: 'Inter', sans-serif;
+  font-size: 14px;
+  font-weight: 800;
+  color: #a07848;
+}
+
+/* Navigation Bar */
+.navBar {
+  background: white;
+  border-top: 4px solid #f0dec4;
+  border-bottom: none;
+  display: flex;
+  justify-content: space-around;
+  align-items: center;
+  height: 139px;
+  padding: 0;
+  margin: 0;
+  gap: 0;
+}
+
+.navItem {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: 8px;
+  padding: 11px 35px;
+  background: none;
+  border: none;
+  cursor: pointer;
+  transition: all 0.2s;
+  position: relative;
+  color: #d4b48a;
+  text-decoration: none;
+}
+
+.navItem:hover {
+  background: rgba(91, 181, 192, 0.05);
+}
+
+.navIcon {
+  font-size: 32px;
+  width: 45px;
+  height: 45px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.navLabel {
+  font-family: 'Nunito', sans-serif;
+  font-size: 16px;
+  font-weight: 800;
+  text-transform: uppercase;
+  letter-spacing: 0.85px;
+  white-space: nowrap;
+}
+
+.navItemActive {
+  color: #5bb5c0;
+}
+
+.navItemActive .navLabel {
+  color: #5bb5c0;
+}
+
+.navDot {
+  position: absolute;
+  bottom: -4px;
+  left: 50%;
+  transform: translateX(-50%);
+  width: 7px;
+  height: 7px;
+  background: #5bb5c0;
+  border-radius: 50%;
+}
+
+@media (max-width: 1680px) {
+  .grid {
+    grid-template-columns: repeat(2, 1fr);
+    gap: 40px;
+  }
+
+  .statsBadge {
+    position: static;
+    margin: 0 0 32px;
+    width: auto;
+  }
+}
+
+@media (max-width: 900px) {
+  .grid {
+    grid-template-columns: 1fr;
+    gap: 24px;
+  }
+
+  .container {
+    padding: 40px 24px;
+  }
+
+  .heading {
+    font-size: 40px;
+    margin-bottom: 24px;
+  }
+
+  .navBar {
+    height: 120px;
+  }
+
+  .storyCard {
+    flex-direction: row;
+    gap: 16px;
+    padding: 16px;
+  }
+
+  .storyImageArea {
+    width: 100px;
+    height: 100px;
+    flex-shrink: 0;
+  }
+
+  .storyIcon {
+    width: 70px;
+    height: 70px;
+    font-size: 40px;
+  }
+
+  .storyContent {
+    border-top: none;
+    padding-top: 0;
+    flex: 1;
+  }
+
+  .storyTitle {
+    font-size: 18px;
+  }
+
+  .storyDate {
+    font-size: 14px;
+  }
+
+  .storyPages {
+    font-size: 12px;
+  }
+}

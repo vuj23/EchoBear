@@ -119,9 +119,9 @@ export default function Home() {
       </main>
 
       <footer className={styles.nav}>
-        <NavButton active={active === 'home'} onClick={() => setActive('home')} label="HOME" icon="home" />
-        <NavButton active={active === 'library'} onClick={() => setActive('library')} label="LIBRARY" icon="book" />
-        <NavButton active={active === 'profile'} onClick={() => setActive('profile')} label="PROFILE" icon="user" />
+        <NavButton active={active === 'home'} onClick={() => { setActive('home'); navigate('/') }} label="HOME" icon="home" />
+        <NavButton active={active === 'library'} onClick={() => { setActive('library'); navigate('/library') }} label="LIBRARY" icon="book" />
+        <NavButton active={active === 'profile'} onClick={() => { setActive('profile'); navigate('/profile') }} label="PROFILE" icon="user" />
       </footer>
     </div>
   )

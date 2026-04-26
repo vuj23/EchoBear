@@ -1,0 +1,374 @@
+.screen {
+  min-height: 100dvh;
+  background: #fff7ec;
+  display: grid;
+  grid-template-rows: 1fr auto;
+}
+
+.container {
+  display: flex;
+  flex-direction: column;
+  gap: 32px;
+  padding: 56px 80px;
+  overflow-y: auto;
+}
+
+/* Header */
+.header {
+  display: flex;
+  align-items: center;
+  gap: 40px;
+}
+
+.backButton {
+  width: 64px;
+  height: 64px;
+  border-radius: 32px;
+  border: 3px solid #e8d0a8;
+  background: white;
+  box-shadow: 0 3px 0 #e8d0a8;
+  font-size: 28px;
+  color: #a07848;
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  transition: transform 0.1s;
+  flex-shrink: 0;
+}
+
+.backButton:active {
+  transform: translateY(2px);
+}
+
+.progressContainer {
+  flex: 1;
+  height: 28px;
+}
+
+.progressBar {
+  width: 100%;
+  height: 12px;
+  background: #f0dec4;
+  border-radius: 999px;
+  overflow: hidden;
+}
+
+.progressFill {
+  height: 100%;
+  background: linear-gradient(to right, #7dccd4, #5bb5c0);
+  border-radius: 999px;
+  transition: width 0.3s;
+  position: relative;
+}
+
+.progressFill::after {
+  content: '';
+  position: absolute;
+  right: -19px;
+  top: -13px;
+  width: 38px;
+  height: 38px;
+  background: #5bb5c0;
+  border: 9px solid white;
+  border-radius: 24px;
+  box-shadow: 0 3px 14px rgba(91, 181, 192, 0.4);
+}
+
+.readAloudButton {
+  width: 91px;
+  height: 91px;
+  border-radius: 45px;
+  border: 5px solid #b8dfe4;
+  background: #e8f7f8;
+  box-shadow: 0 5px 0 #b8dfe4;
+  font-size: 40px;
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  flex-shrink: 0;
+  transition: transform 0.1s;
+}
+
+.readAloudButton:active {
+  transform: translateY(2px);
+}
+
+/* Story Context */
+.storyContext {
+  font-family: 'Nunito', sans-serif;
+  font-size: 48px;
+  font-weight: 800;
+  color: #a07848;
+  margin: 0;
+  letter-spacing: 0.84px;
+  line-height: 1.2;
+}
+
+/* Main Content */
+.mainContent {
+  display: grid;
+  grid-template-columns: 200px 1fr 100px;
+  gap: 40px;
+  align-items: center;
+  justify-items: center;
+}
+
+.micSection {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 12px;
+}
+
+.micButton {
+  width: 180px;
+  height: 180px;
+  border-radius: 90px;
+  border: none;
+  background: #5fb4c7;
+  box-shadow: 0 9px 0 #3e8f99, 0 18px 55px rgba(91, 181, 192, 0.32);
+  font-size: 56px;
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  transition: transform 0.1s;
+}
+
+.micButton:active {
+  transform: translateY(2px);
+}
+
+.micButton.micButtonActive {
+  animation: pulse 1s ease-in-out infinite;
+}
+
+@keyframes pulse {
+  0%, 100% {
+    transform: scale(1);
+  }
+  50% {
+    transform: scale(1.08);
+  }
+}
+
+.micLabel {
+  font-family: 'Nunito', sans-serif;
+  font-size: 30px;
+  font-weight: 800;
+  color: #a07848;
+  margin: 0;
+  text-align: center;
+  letter-spacing: 0.69px;
+}
+
+/* Word Card */
+.wordCard {
+  background: white;
+  border: 10px solid #e8d0a8;
+  border-radius: 134px;
+  padding: 80px 40px;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 40px;
+  width: 100%;
+  max-width: 1240px;
+  justify-self: center;
+}
+
+.wordContainer {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 20px;
+}
+
+.wordPartWrapper {
+  display: flex;
+  align-items: center;
+  gap: 20px;
+}
+
+.syllableSeparator {
+  font-family: 'Inter', sans-serif;
+  font-size: 160px;
+  font-weight: 900;
+  color: #d4b48a;
+  margin: 0;
+  line-height: 1;
+}
+
+.wordPart {
+  font-family: 'Inter', sans-serif;
+  font-size: 214px;
+  font-weight: 900;
+  color: white;
+  margin: 0;
+  line-height: 1.2;
+  padding: 16px;
+  border-radius: 84px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  min-width: 260px;
+  text-align: center;
+  min-height: 260px;
+  border: 12px solid;
+}
+
+.wordPartBlue {
+  background: #e8f7f8;
+  border-color: #5bb5c0;
+  color: #3a9ba6;
+  box-shadow: 0 17px 0 #3a9ba6;
+}
+
+.wordPartGold {
+  background: #fff3d4;
+  border-color: #d4a840;
+  color: #c49830;
+  box-shadow: 0 17px 0 #c49830;
+}
+
+.wordPrompt {
+  font-family: 'Nunito', sans-serif;
+  font-size: 48px;
+  font-weight: 800;
+  color: #a07848;
+  margin: 0;
+  letter-spacing: 0.84px;
+  text-align: center;
+}
+
+/* Next Button */
+.nextButton {
+  width: 100px;
+  height: 100px;
+  border-radius: 50%;
+  border: none;
+  background: #5bb5c0;
+  font-size: 40px;
+  color: white;
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  transition: transform 0.1s;
+  box-shadow: 0 8px 0 #3e8f99;
+}
+
+.nextButton:active {
+  transform: translateY(2px);
+}
+
+/* Navigation */
+.nav {
+  background: white;
+  border-top: 4px solid #f0dec4;
+  display: flex;
+  justify-content: space-around;
+  align-items: center;
+  height: 139px;
+  padding: 0;
+  margin: 0;
+}
+
+@media (max-width: 1280px) {
+  .container {
+    padding: 40px 50px;
+    gap: 24px;
+  }
+
+  .mainContent {
+    grid-template-columns: 1fr;
+    gap: 24px;
+  }
+
+  .wordCard {
+    padding: 40px 20px;
+    border-radius: 50px;
+  }
+
+  .wordPart {
+    font-size: 120px;
+    min-width: 140px;
+    min-height: 140px;
+    border: 8px solid;
+  }
+
+  .syllableSeparator {
+    font-size: 80px;
+  }
+
+  .micButton {
+    width: 120px;
+    height: 120px;
+    font-size: 40px;
+  }
+
+  .micLabel {
+    font-size: 20px;
+  }
+
+  .wordPrompt {
+    font-size: 32px;
+  }
+
+  .storyContext {
+    font-size: 32px;
+  }
+}
+
+@media (max-width: 768px) {
+  .container {
+    padding: 24px 20px;
+    gap: 16px;
+  }
+
+  .header {
+    gap: 16px;
+    flex-wrap: wrap;
+  }
+
+  .backButton {
+    width: 50px;
+    height: 50px;
+    font-size: 24px;
+  }
+
+  .readAloudButton {
+    width: 60px;
+    height: 60px;
+    font-size: 28px;
+  }
+
+  .mainContent {
+    gap: 16px;
+  }
+
+  .micButton {
+    width: 100px;
+    height: 100px;
+    font-size: 32px;
+  }
+
+  .wordPart {
+    font-size: 80px;
+    min-width: 100px;
+    min-height: 100px;
+    border: 6px solid;
+  }
+
+  .words {
+    font-size: 60px;
+  }
+
+  .nextButton {
+    width: 70px;
+    height: 70px;
+    font-size: 30px;
+  }
+}

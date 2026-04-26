@@ -1,0 +1,343 @@
+.screen {
+  min-height: 100dvh;
+  background: #fbf2e8;
+  display: grid;
+  grid-template-rows: 1fr auto;
+}
+
+.container {
+  padding: 32px 24px 24px;
+  display: flex;
+  flex-direction: column;
+  gap: 20px;
+  max-width: 960px;
+  margin: 0 auto;
+  width: 100%;
+}
+
+.heading {
+  font-size: 36px;
+  font-weight: 800;
+  color: #5a3b26;
+  margin: 0;
+}
+
+.card {
+  background: #fff7ee;
+  border: 3px solid #e8c8a6;
+  border-radius: 20px;
+  padding: 24px;
+  flex: 1;
+}
+
+.cardTitle {
+  font-size: 20px;
+  font-weight: 800;
+  color: #5a3b26;
+  margin: 0 0 4px;
+}
+
+.cardSubtitle {
+  font-size: 14px;
+  color: #a77c5e;
+  margin: 0 0 16px;
+  font-weight: 600;
+}
+
+/* Reading level grid */
+.levelGrid {
+  display: grid;
+  grid-template-columns: repeat(5, 1fr);
+  gap: 10px;
+  margin-bottom: 14px;
+}
+
+.levelButton {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 4px;
+  padding: 10px 6px;
+  background: #f5e8d8;
+  border: 2px solid #e0c4a0;
+  border-radius: 14px;
+  cursor: pointer;
+  transition: all 0.15s;
+}
+
+.levelButton:hover {
+  background: #ecd8c0;
+}
+
+.levelButtonActive {
+  background: #67bdd1;
+  border-color: #4fa8be;
+  color: white;
+}
+
+.levelNumber {
+  font-size: 22px;
+  font-weight: 800;
+  color: #5a3b26;
+}
+
+.levelButtonActive .levelNumber {
+  color: white;
+}
+
+.levelAges {
+  font-size: 10px;
+  font-weight: 700;
+  color: #a77c5e;
+}
+
+.levelButtonActive .levelAges {
+  color: rgba(255,255,255,0.85);
+}
+
+.levelDesc {
+  font-size: 9px;
+  font-weight: 600;
+  color: #b89070;
+  text-align: center;
+  line-height: 1.3;
+}
+
+.levelButtonActive .levelDesc {
+  color: rgba(255,255,255,0.8);
+}
+
+.selectedLevelInfo {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  background: #e8f6fa;
+  border-radius: 10px;
+  padding: 10px 14px;
+}
+
+.selectedLevelIcon {
+  color: #67bdd1;
+  font-size: 12px;
+}
+
+.selectedLevelText {
+  font-size: 14px;
+  font-weight: 700;
+  color: #5a3b26;
+}
+
+/* Content row */
+.contentRow {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 20px;
+}
+
+/* Words learned */
+.wordsCount {
+  font-size: 48px;
+  font-weight: 800;
+  color: #67bdd1;
+  line-height: 1;
+  margin-bottom: 2px;
+}
+
+.wordsLabel {
+  font-size: 11px;
+  font-weight: 800;
+  letter-spacing: 0.1em;
+  color: #a77c5e;
+  margin-bottom: 12px;
+}
+
+.progressBar {
+  width: 100%;
+  height: 10px;
+  background: #e8d5bf;
+  border-radius: 999px;
+  overflow: hidden;
+  margin-bottom: 6px;
+}
+
+.progressFill {
+  height: 100%;
+  background: #67bdd1;
+  border-radius: 999px;
+  transition: width 0.3s ease;
+}
+
+.progressText {
+  font-size: 12px;
+  font-weight: 600;
+  color: #a77c5e;
+  margin-bottom: 14px;
+}
+
+.wordTags {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 6px;
+}
+
+.wordTag {
+  background: #f0e4d4;
+  border-radius: 999px;
+  padding: 4px 12px;
+  font-size: 13px;
+  font-weight: 700;
+  color: #8B6E4E;
+}
+
+/* Settings */
+.settingsList {
+  display: flex;
+  flex-direction: column;
+  gap: 0;
+}
+
+.settingItem {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 12px 0;
+  border-bottom: 1px solid #f0e4d4;
+}
+
+.settingItem:last-child {
+  border-bottom: none;
+}
+
+.settingInfo {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+}
+
+.settingIcon {
+  font-size: 20px;
+  width: 32px;
+  text-align: center;
+}
+
+.settingTitle {
+  font-size: 14px;
+  font-weight: 700;
+  color: #5a3b26;
+}
+
+.settingDesc {
+  font-size: 12px;
+  color: #a77c5e;
+  font-weight: 500;
+}
+
+.settingArrow {
+  font-size: 22px;
+  color: #c8a882;
+  line-height: 1;
+}
+
+/* Toggle switch */
+.toggle {
+  position: relative;
+  display: inline-block;
+  width: 44px;
+  height: 24px;
+  cursor: pointer;
+}
+
+.toggle input {
+  opacity: 0;
+  width: 0;
+  height: 0;
+}
+
+.toggleSwitch {
+  position: absolute;
+  inset: 0;
+  background: #dcc8b0;
+  border-radius: 999px;
+  transition: background 0.2s;
+}
+
+.toggleSwitch::before {
+  content: '';
+  position: absolute;
+  width: 18px;
+  height: 18px;
+  left: 3px;
+  top: 3px;
+  background: white;
+  border-radius: 50%;
+  transition: transform 0.2s;
+}
+
+.toggle input:checked + .toggleSwitch {
+  background: #67bdd1;
+}
+
+.toggle input:checked + .toggleSwitch::before {
+  transform: translateX(20px);
+}
+
+/* Nav */
+.nav {
+  height: 98px;
+  background: #ffffff;
+  border-top: 2px solid #e8c8a6;
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  align-items: center;
+  padding: 10px 28px;
+}
+
+.navItem {
+  appearance: none;
+  border: none;
+  background: transparent;
+  display: grid;
+  justify-items: center;
+  gap: 6px;
+  cursor: pointer;
+  padding: 10px 0;
+  color: #d0aa88;
+}
+
+.navItemActive {
+  color: #67bdd1;
+}
+
+.navIcon {
+  display: grid;
+  place-items: center;
+}
+
+.navLabel {
+  font-size: 12px;
+  letter-spacing: 0.12em;
+  font-weight: 800;
+}
+
+.navDot {
+  width: 4px;
+  height: 4px;
+  border-radius: 999px;
+  background: currentColor;
+}
+
+.navDotSpacer {
+  width: 4px;
+  height: 4px;
+  opacity: 0;
+}
+
+@media (max-width: 700px) {
+  .contentRow {
+    grid-template-columns: 1fr;
+  }
+
+  .levelGrid {
+    grid-template-columns: repeat(3, 1fr);
+  }
+}
