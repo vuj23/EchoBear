@@ -67,8 +67,9 @@ Rules:
 - Each scene must continue from the previous one — one connected story
 - 3 scenes must have a targetWord (a simple CVC or common word for age 6), spread them out
 - Scenes 4 and 6 should have no targetWord — set targetWord and wordSplit to "" and phonemes to []
-- targetWord MUST appear verbatim in storyText
-- wordSplit uses — (em dash) between syllables e.g. "b—ig", "r—ed", "j—ump"
+- targetWord MUST appear verbatim in storyText as a normal word (e.g. "big", NOT "b—ig")
+- NEVER put the — split format inside storyText
+- wordSplit uses — (em dash) between syllables e.g. "b—ig", "r—ed", "j—ump" — this goes in wordSplit only
 - phonemes is array of individual sounds
 - imagePrompt can be left as ""
 - Include "TUNG! TUNG! TUNG!" at least once in the story
@@ -112,7 +113,7 @@ Output the JSON object now:`
 
   if (!story.title || !Array.isArray(story.scenes)) throw new Error('Invalid story JSON')
   for (const s of story.scenes) {
-    s.storyText = s.storyText ?? ''
+    s.storyText = (s.storyText ?? '').replace(/(\w+)—(\w+)/g, '$1$2')
     s.pauseText = s.pauseText ?? ''
     s.targetWord = s.targetWord ?? ''
     s.wordSplit = s.wordSplit ?? ''

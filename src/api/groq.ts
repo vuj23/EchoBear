@@ -3,7 +3,14 @@ import { LEVEL_CONFIGS } from '../levelConfig'
 
 const GROQ_API_KEY = import.meta.env.VITE_GROQ_API_KEY
 const GROQ_BASE = 'https://api.groq.com/openai/v1/chat/completions'
-const MODEL = 'llama-3.1-8b-instant'
+
+// Ordered by TPM headroom — falls through on 429
+const MODELS = [
+  'meta-llama/llama-4-scout-17b-16e-instruct', // 30K TPM
+  'llama-3.3-70b-versatile',                    // 12K TPM
+  'llama-3.1-8b-instant',                       // 6K TPM
+  'qwen/qwen3-32b',                             // 6K TPM fallback
+]
 
 function buildPrompt(userPrompt: string, level: number): string {
   const config = LEVEL_CONFIGS[level]
@@ -41,13 +48,14 @@ Story structure (6 scenes must follow this arc):
 6. Ending — a warm, satisfying conclusion
 
 Rules:
-- Each scene's storyText must be 3–4 sentences long, not just one line
+- Each scene's storyText must be 2 sentences long, not just one line
 - Each scene must naturally follow from the previous one — connected narrative, not isolated sentences
 - Use the same characters and setting throughout
 - Exactly 6 scene objects in the scenes array
 - Spread the ${config.wordCount} target word(s) across different scenes
-- targetWord MUST appear verbatim inside storyText
-- wordSplit uses — (em dash) to split syllables e.g. "r—ed", "b—ig", "c—at"
+- targetWord MUST appear verbatim inside storyText as a normal word (e.g. "big", NOT "b—ig")
+- NEVER put the — split format inside storyText
+- wordSplit uses — (em dash) to split syllables e.g. "r—ed", "b—ig", "c—at" — this goes in wordSplit only
 - phonemes is an array of individual sounds e.g. ["r","e","d"]
 - Scenes with no target word: set targetWord and wordSplit to "" and phonemes to []
 - pauseText is only needed when targetWord is non-empty
@@ -55,24 +63,27 @@ Rules:
 Output the JSON object now:`
 }
 
+async function groqFetch(model: string, content: string): Promise<Response> {
+  return fetch(GROQ_BASE, {
+    method: 'POST',
+    headers: { 'Content-Type': 'application/json', 'Authorization': `Bearer ${GROQ_API_KEY}` },
+    body: JSON.stringify({ model, messages: [{ role: 'user', content }], temperature: 0.7, max_tokens: 3500 }),
+  })
+}
+
+async function groqFetchWithFallback(content: string): Promise<Response> {
+  for (const model of MODELS) {
+    const res = await groqFetch(model, content)
+    if (res.status !== 429) return res
+  }
+  throw new Error('All models rate limited — try again in a moment')
+}
+
 export async function generateStory(userPrompt: string, level: number): Promise<StoryJSON> {
   if (!GROQ_API_KEY) throw new Error('No Groq key — add VITE_GROQ_API_KEY to .env')
 
-  const res = await fetch(GROQ_BASE, {
-    method: 'POST',
-    headers: {
-      'Content-Type': 'application/json',
-      'Authorization': `Bearer ${GROQ_API_KEY}`,
-    },
-    body: JSON.stringify({
-      model: MODEL,
-      messages: [{ role: 'user', content: buildPrompt(userPrompt, level) }],
-      temperature: 0.7,
-      max_tokens: 3500,
-    }),
-  })
+  const res = await groqFetchWithFallback(buildPrompt(userPrompt, level))
 
-  if (res.status === 429) throw new Error('Rate limit — wait a moment and try again')
   if (!res.ok) {
     const text = await res.text().catch(() => '')
     throw new Error(`Groq API ${res.status}: ${text.slice(0, 200)}`)
@@ -107,13 +118,18 @@ function sanitiseStory(story: StoryJSON): void {
     throw new Error('Story JSON missing title or scenes')
   }
   for (const scene of story.scenes) {
-    scene.storyText = scene.storyText ?? ''
+    // Strip any em-dash word splits the model accidentally puts in storyText (e.g. "b—ig" → "big")
+    scene.storyText = removeSplits(scene.storyText ?? '')
     scene.pauseText = scene.pauseText ?? ''
     scene.targetWord = scene.targetWord ?? ''
     scene.wordSplit = scene.wordSplit ?? ''
     scene.phonemes = Array.isArray(scene.phonemes) ? scene.phonemes : []
     scene.imagePrompt = scene.imagePrompt ?? ''
   }
+}
+
+function removeSplits(text: string): string {
+  return text.replace(/(\w+)—(\w+)/g, '$1$2')
 }
 
 // ── Images ────────────────────────────────────────────────────

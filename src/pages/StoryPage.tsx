@@ -6,6 +6,7 @@ import type { StoryJSON } from '../types'
 import { generateImage } from '../api/groq'
 
 type NavItem = 'home' | 'library' | 'profile'
+type Phase = 'reading' | 'practicing'
 type PracticeResult = 'idle' | 'correct' | 'wrong'
 
 declare global {
@@ -77,16 +78,17 @@ function SceneImage({ src, index }: { src: string | null; index: number }) {
 export default function StoryPage() {
   const [active, setActive] = useState<NavItem>('home')
   const [pageIndex, setPageIndex] = useState(0)
+  const [phase, setPhase] = useState<Phase>('reading')
 
   // Practice states
   const [practiceResult, setPracticeResult] = useState<PracticeResult>('idle')
   const [heardWord, setHeardWord] = useState('')
   const [isListening, setIsListening] = useState(false)
-  const [practiceDone, setPracticeDone] = useState(false)
   const recognitionRef = useRef<any>(null)
 
   const audioRef = useRef<HTMLAudioElement | null>(null)
   const isAudioLoadingRef = useRef(false)
+  const abortRef = useRef<AbortController | null>(null)
   const navigate = useNavigate()
   const location = useLocation()
 
@@ -100,28 +102,29 @@ export default function StoryPage() {
   const scene = story.scenes[pageIndex]
   const image = imageUrls[pageIndex] ?? null
   const isLastPage = pageIndex >= story.scenes.length - 1
-  const hasTargetWord = !!scene?.targetWord
-  const showPractice = hasTargetWord && !practiceDone
   const wordParts = scene?.wordSplit?.split('—') ?? [scene?.targetWord ?? '']
 
-  // Reset practice state when page changes
+  // Reset practice when page changes
   useEffect(() => {
+    setPhase('reading')
     setPracticeResult('idle')
     setHeardWord('')
     setIsListening(false)
-    setPracticeDone(false)
     recognitionRef.current?.stop()
   }, [pageIndex])
 
   const playStoryText = useCallback(async (text: string) => {
+    // Cancel any in-flight request and stop current audio
+    abortRef.current?.abort()
+    const abort = new AbortController()
+    abortRef.current = abort
+
     if (audioRef.current) {
       audioRef.current.pause()
       audioRef.current = null
     }
-
     try {
       isAudioLoadingRef.current = true
-
       const res = await fetch(
         `https://api.elevenlabs.io/v1/text-to-speech/${ELEVEN_VOICE_ID}`,
         {
@@ -136,10 +139,12 @@ export default function StoryPage() {
             model_id: 'eleven_flash_v2_5',
             voice_settings: { stability: 0.5, similarity_boost: 0.75, speed: 0.8, style: 0.0, use_speaker_boost: true },
           }),
+          signal: abort.signal,
         }
       )
-
+      if (abort.signal.aborted) return
       const blob = await res.blob()
+      if (abort.signal.aborted) return
       const url = URL.createObjectURL(blob)
       const audio = new Audio(url)
       audioRef.current = audio
@@ -147,17 +152,34 @@ export default function StoryPage() {
       audio.play()
       audio.onended = () => URL.revokeObjectURL(url)
     } catch (error) {
+      if (error instanceof Error && error.name === 'AbortError') return
       console.error('ElevenLabs error:', error)
       isAudioLoadingRef.current = false
     }
   }, [])
 
   useEffect(() => {
-    if (scene?.storyText) {
-      playStoryText(scene.storyText)
+    if (scene?.storyText) playStoryText(scene.storyText)
+    return () => {
+      abortRef.current?.abort()
+      audioRef.current?.pause()
     }
-    return () => { audioRef.current?.pause() }
   }, [scene?.storyText, playStoryText])
+
+  function advanceScene() {
+    if (isLastPage) navigate('/')
+    else setPageIndex(i => i + 1)
+  }
+
+  function handleNextClick() {
+    if (scene?.targetWord) {
+      audioRef.current?.pause()
+      audioRef.current = null
+      setPhase('practicing')
+    } else {
+      advanceScene()
+    }
+  }
 
   function handleMicClick() {
     if (isListening) {
@@ -165,7 +187,6 @@ export default function StoryPage() {
       setIsListening(false)
       return
     }
-
     const SR = window.SpeechRecognition || window.webkitSpeechRecognition
     if (!SR) return
 
@@ -176,19 +197,14 @@ export default function StoryPage() {
     rec.lang = 'en-US'
     rec.continuous = false
     rec.interimResults = false
-
     rec.onresult = (e: any) => {
       const spoken = e.results[0][0].transcript.trim().toLowerCase()
       setHeardWord(spoken)
-      const target = scene.targetWord.toLowerCase()
-      const correct = spoken.includes(target)
+      const correct = spoken.includes(scene.targetWord.toLowerCase())
       setPracticeResult(correct ? 'correct' : 'wrong')
-      if (correct) {
-        setTimeout(() => setPracticeDone(true), 1400)
-      }
+      if (correct) setTimeout(() => advanceScene(), 1400)
       setIsListening(false)
     }
-
     rec.onend = () => setIsListening(false)
     rec.onerror = () => { setIsListening(false); setPracticeResult('wrong') }
     recognitionRef.current = rec
@@ -196,9 +212,74 @@ export default function StoryPage() {
     setIsListening(true)
   }
 
-  function handleNext() {
-    if (isLastPage) navigate('/')
-    else setPageIndex(i => i + 1)
+  if (phase === 'practicing' && scene?.targetWord) {
+    return (
+      <div>
+        <div className={styles.practiceScreen}>
+          <div className={styles.practiceCard}>
+            <p className={styles.practicePrompt}>
+              {scene.pauseText ? `"${scene.pauseText}"` : 'Can you say this word?'}
+            </p>
+
+            <div className={styles.wordDisplay}>
+              {wordParts.map((part, i) => (
+                <div key={i} className={styles.wordPartWrapper}>
+                  {i > 0 && <span className={styles.syllableSep}>—</span>}
+                  <div className={`${styles.wordPart} ${i === 0 ? styles.wordPartBlue : styles.wordPartGold}`}>
+                    {part}
+                  </div>
+                </div>
+              ))}
+            </div>
+
+            {practiceResult === 'wrong' && scene.phonemes.length > 0 && (
+              <div className={styles.phonemeRow}>
+                {scene.phonemes.map((p, i) => (
+                  <span key={i} className={styles.phoneme}>{p}</span>
+                ))}
+              </div>
+            )}
+
+            <button
+              className={`${styles.micBtn} ${isListening ? styles.micBtnActive : ''}`}
+              onClick={handleMicClick}
+              aria-label={isListening ? 'Listening' : 'Tap to speak'}
+            >
+              {isListening ? '🎙️' : '🎤'}
+            </button>
+            <p className={styles.micLabel}>{isListening ? 'Listening…' : 'Tap to speak'}</p>
+
+            {practiceResult === 'correct' && (
+              <div className={styles.feedbackCorrect}>Great job! 🌟 Word added to your list!</div>
+            )}
+            {practiceResult === 'wrong' && heardWord && (
+              <div className={styles.feedbackWrong}>
+                I heard "<strong>{heardWord}</strong>" — try saying <strong>{scene.targetWord}</strong>
+              </div>
+            )}
+
+            <button className={styles.skipBtn} onClick={advanceScene}>
+              Skip →
+            </button>
+          </div>
+
+          <div className={styles.dots}>
+            {story.scenes.map((_, i) => (
+              <span
+                key={i}
+                className={`${styles.dot} ${i === pageIndex ? styles.dotActive : i < pageIndex ? styles.dotDone : ''}`}
+              />
+            ))}
+          </div>
+        </div>
+
+        <footer className={navStyles.nav}>
+          <NavButton active={active === 'home'} onClick={() => { navigate('/'); setActive('home') }} label="HOME" icon="home" />
+          <NavButton active={active === 'library'} onClick={() => setActive('library')} label="LIBRARY" icon="book" />
+          <NavButton active={active === 'profile'} onClick={() => setActive('profile')} label="PROFILE" icon="user" />
+        </footer>
+      </div>
+    )
   }
 
   return (
@@ -221,76 +302,17 @@ export default function StoryPage() {
               </button>
             </p>
           </div>
-          {!showPractice && (
-            <button
-              className={styles.nextButton}
-              aria-label="Next page"
-              type="button"
-              onClick={handleNext}
-            >
-              <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="white" strokeWidth="3">
-                <path d="m9 18 6-6-6-6" strokeLinecap="round" strokeLinejoin="round" />
-              </svg>
-            </button>
-          )}
+          <button
+            className={styles.nextButton}
+            aria-label="Next"
+            type="button"
+            onClick={handleNextClick}
+          >
+            <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="white" strokeWidth="3">
+              <path d="m9 18 6-6-6-6" strokeLinecap="round" strokeLinejoin="round" />
+            </svg>
+          </button>
         </div>
-
-        {/* Inline phonics practice panel */}
-        {showPractice && (
-          <div className={styles.practicePanel}>
-            <p className={styles.practicePrompt}>
-              {scene.pauseText ? `"${scene.pauseText}"` : 'Can you say this word?'}
-            </p>
-
-            {/* Word split display */}
-            <div className={styles.wordDisplay}>
-              {wordParts.map((part, i) => (
-                <div key={i} className={styles.wordPartWrapper}>
-                  {i > 0 && <span className={styles.syllableSep}>—</span>}
-                  <div className={`${styles.wordPart} ${i === 0 ? styles.wordPartBlue : styles.wordPartGold}`}>
-                    {part}
-                  </div>
-                </div>
-              ))}
-            </div>
-
-            {/* Phoneme scaffold — shown after wrong answer */}
-            {practiceResult === 'wrong' && scene.phonemes.length > 0 && (
-              <div className={styles.phonemeRow}>
-                {scene.phonemes.map((p, i) => (
-                  <span key={i} className={styles.phoneme}>{p}</span>
-                ))}
-              </div>
-            )}
-
-            {/* Mic button */}
-            <button
-              className={`${styles.micBtn} ${isListening ? styles.micBtnActive : ''}`}
-              onClick={handleMicClick}
-              aria-label={isListening ? 'Listening' : 'Tap to speak'}
-            >
-              {isListening ? '🎙️' : '🎤'}
-            </button>
-            <p className={styles.micLabel}>{isListening ? 'Listening…' : 'Tap to speak'}</p>
-
-            {/* Feedback */}
-            {practiceResult === 'correct' && (
-              <div className={styles.feedbackCorrect}>Great job! 🌟 Word added to your list!</div>
-            )}
-            {practiceResult === 'wrong' && heardWord && (
-              <div className={styles.feedbackWrong}>
-                I heard "<strong>{heardWord}</strong>" — try saying <strong>{scene.targetWord}</strong>
-              </div>
-            )}
-
-            {/* Next / skip row */}
-            <div className={styles.practiceActions}>
-              <button className={styles.skipBtn} onClick={() => setPracticeDone(true)}>
-                Skip →
-              </button>
-            </div>
-          </div>
-        )}
 
         <div className={styles.dots}>
           {story.scenes.map((_, i) => (
