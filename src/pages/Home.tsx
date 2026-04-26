@@ -3,6 +3,7 @@ import { useState, useRef } from 'react'
 import { useNavigate } from 'react-router-dom'
 import { generateStory } from '../api/groq'
 import { generateBrainrotStory, getBrainrotImages } from '../api/brainrot'
+import { loadLevel } from '../utils/storyStorage'
 
 type NavItem = 'home' | 'library' | 'profile'
 
@@ -67,7 +68,7 @@ export default function Home() {
     setIsLoading(true)
     setError(null)
     try {
-      const story = await generateStory(prompt, 2)
+      const story = await generateStory(prompt, loadLevel())
       navigate('/story', { state: { story } })
     } catch (e) {
       setError(e instanceof Error ? e.message : 'Failed to generate story')

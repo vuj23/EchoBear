@@ -1,9 +1,12 @@
 import styles from './Profile.module.css'
 import { useState } from 'react'
 import { useNavigate } from 'react-router-dom'
+import { saveLevel, loadLevel, loadLearnedWords } from '../utils/storyStorage'
 
 type NavItem = 'home' | 'library' | 'profile'
 type ReadingLevel = 1 | 2 | 3 | 4 | 5
+
+const GOAL = 50
 
 const readingLevels = [
   { level: 1, ages: '3-4', description: 'Learning letters & sounds' },
@@ -13,11 +16,9 @@ const readingLevels = [
   { level: 5, ages: '7-8', description: 'Rich vocabulary stories' },
 ]
 
-const learnedWords = ['red', 'flower', 'garden', 'dragon', 'brave', 'frog', 'jump', 'moon', 'star', 'whale', 'song', 'magic']
-
 export default function Profile() {
   const [active, setActive] = useState<NavItem>('profile')
-  const [selectedLevel, setSelectedLevel] = useState<ReadingLevel>(2)
+  const [selectedLevel, setSelectedLevel] = useState<ReadingLevel>(() => loadLevel() as ReadingLevel)
   const [settings, setSettings] = useState({
     readAloud: true,
     backgroundMusic: false,
@@ -25,6 +26,15 @@ export default function Profile() {
     parentControls: false,
   })
   const navigate = useNavigate()
+
+  const learnedWords = loadLearnedWords()
+  const wordCount = learnedWords.length
+  const progress = Math.min(100, Math.round((wordCount / GOAL) * 100))
+
+  function handleLevelChange(level: ReadingLevel) {
+    setSelectedLevel(level)
+    saveLevel(level)
+  }
 
   const handleNavClick = (key: NavItem) => {
     setActive(key)
@@ -43,7 +53,6 @@ export default function Profile() {
       <div className={styles.container}>
         <h1 className={styles.heading}>Profile:</h1>
 
-        {/* Reading Level Section */}
         <div className={styles.card}>
           <h2 className={styles.cardTitle}>Reading Level</h2>
           <p className={styles.cardSubtitle}>Choose the level that fits your child best</p>
@@ -53,7 +62,7 @@ export default function Profile() {
               <button
                 key={level.level}
                 className={`${styles.levelButton} ${selectedLevel === level.level ? styles.levelButtonActive : ''}`}
-                onClick={() => setSelectedLevel(level.level as ReadingLevel)}
+                onClick={() => handleLevelChange(level.level as ReadingLevel)}
               >
                 <div className={styles.levelNumber}>{level.level}</div>
                 <div className={styles.levelAges}>Ages {level.ages}</div>
@@ -72,87 +81,50 @@ export default function Profile() {
           )}
         </div>
 
-        {/* Content Row */}
         <div className={styles.contentRow}>
-          {/* Words Learned */}
           <div className={styles.card}>
             <h2 className={styles.cardTitle}>Words Learned</h2>
-            <div className={styles.wordsCount}>19</div>
+            <div className={styles.wordsCount}>{wordCount}</div>
             <div className={styles.wordsLabel}>WORDS LEARNED</div>
 
             <div className={styles.progressBar}>
-              <div className={styles.progressFill} style={{ width: '38%' }}></div>
+              <div className={styles.progressFill} style={{ width: `${progress}%` }} />
             </div>
-            <div className={styles.progressText}>19 of 50 — Goal: 50 words</div>
+            <div className={styles.progressText}>{wordCount} of {GOAL} — Goal: {GOAL} words</div>
 
-            <div className={styles.wordTags}>
-              {learnedWords.map((word) => (
-                <span key={word} className={styles.wordTag}>
-                  {word}
-                </span>
-              ))}
-            </div>
+            {learnedWords.length > 0 ? (
+              <div className={styles.wordTags}>
+                {learnedWords.map((word) => (
+                  <span key={word} className={styles.wordTag}>{word}</span>
+                ))}
+              </div>
+            ) : (
+              <p className={styles.noWordsText}>Practice phonics in stories to add words here!</p>
+            )}
           </div>
 
-          {/* Settings */}
           <div className={styles.card}>
             <h2 className={styles.cardTitle}>Settings</h2>
-
             <div className={styles.settingsList}>
-              <div className={styles.settingItem}>
-                <div className={styles.settingInfo}>
-                  <div className={styles.settingIcon}>🔊</div>
-                  <div className={styles.settingContent}>
-                    <div className={styles.settingTitle}>Read Aloud</div>
-                    <div className={styles.settingDesc}>Narrate the story out loud</div>
+              {[
+                { key: 'readAloud' as const, icon: '🔊', title: 'Read Aloud', desc: 'Narrate the story out loud' },
+                { key: 'backgroundMusic' as const, icon: '🎵', title: 'Background Music', desc: 'Soft sounds while reading' },
+                { key: 'wordHighlights' as const, icon: '✏️', title: 'Word Highlights', desc: 'Highlight words as they\'re read' },
+              ].map(({ key, icon, title, desc }) => (
+                <div key={key} className={styles.settingItem}>
+                  <div className={styles.settingInfo}>
+                    <div className={styles.settingIcon}>{icon}</div>
+                    <div className={styles.settingContent}>
+                      <div className={styles.settingTitle}>{title}</div>
+                      <div className={styles.settingDesc}>{desc}</div>
+                    </div>
                   </div>
+                  <label className={styles.toggle}>
+                    <input type="checkbox" checked={settings[key]} onChange={() => toggleSetting(key)} />
+                    <span className={styles.toggleSwitch} />
+                  </label>
                 </div>
-                <label className={styles.toggle}>
-                  <input
-                    type="checkbox"
-                    checked={settings.readAloud}
-                    onChange={() => toggleSetting('readAloud')}
-                  />
-                  <span className={styles.toggleSwitch}></span>
-                </label>
-              </div>
-
-              <div className={styles.settingItem}>
-                <div className={styles.settingInfo}>
-                  <div className={styles.settingIcon}>🎵</div>
-                  <div className={styles.settingContent}>
-                    <div className={styles.settingTitle}>Background Music</div>
-                    <div className={styles.settingDesc}>Soft sounds while reading</div>
-                  </div>
-                </div>
-                <label className={styles.toggle}>
-                  <input
-                    type="checkbox"
-                    checked={settings.backgroundMusic}
-                    onChange={() => toggleSetting('backgroundMusic')}
-                  />
-                  <span className={styles.toggleSwitch}></span>
-                </label>
-              </div>
-
-              <div className={styles.settingItem}>
-                <div className={styles.settingInfo}>
-                  <div className={styles.settingIcon}>✏️</div>
-                  <div className={styles.settingContent}>
-                    <div className={styles.settingTitle}>Word Highlights</div>
-                    <div className={styles.settingDesc}>Highlight words as they're read</div>
-                  </div>
-                </div>
-                <label className={styles.toggle}>
-                  <input
-                    type="checkbox"
-                    checked={settings.wordHighlights}
-                    onChange={() => toggleSetting('wordHighlights')}
-                  />
-                  <span className={styles.toggleSwitch}></span>
-                </label>
-              </div>
-
+              ))}
               <div className={styles.settingItem}>
                 <div className={styles.settingInfo}>
                   <div className={styles.settingIcon}>🔒</div>
@@ -168,7 +140,6 @@ export default function Profile() {
         </div>
       </div>
 
-      {/* Navigation */}
       <footer className={styles.nav}>
         <NavButton active={active === 'home'} onClick={() => handleNavClick('home')} label="HOME" icon="home" />
         <NavButton active={active === 'library'} onClick={() => handleNavClick('library')} label="LIBRARY" icon="book" />
@@ -182,23 +153,9 @@ function NavButton({ active, label, icon, onClick }: { active: boolean; label: s
   return (
     <button className={`${styles.navItem} ${active ? styles.navItemActive : ''}`} type="button" onClick={onClick}>
       <span className={styles.navIcon} aria-hidden="true">
-        {icon === 'home' && (
-          <svg width="26" height="26" viewBox="0 0 24 24" fill="none">
-            <path d="M3 10.5 12 3l9 7.5V21a1 1 0 0 1-1 1h-5v-7H9v7H4a1 1 0 0 1-1-1V10.5Z" stroke="currentColor" strokeWidth="2" strokeLinejoin="round" />
-          </svg>
-        )}
-        {icon === 'book' && (
-          <svg width="26" height="26" viewBox="0 0 24 24" fill="none">
-            <path d="M6 3h11a2 2 0 0 1 2 2v15a1 1 0 0 1-1 1H7a2 2 0 0 0-2 2V5a2 2 0 0 1 2-2Z" stroke="currentColor" strokeWidth="2" strokeLinejoin="round" />
-            <path d="M5 5v16" stroke="currentColor" strokeWidth="2" strokeLinejoin="round" />
-          </svg>
-        )}
-        {icon === 'user' && (
-          <svg width="26" height="26" viewBox="0 0 24 24" fill="none">
-            <path d="M20 21a8 8 0 1 0-16 0" stroke="currentColor" strokeWidth="2" strokeLinecap="round" />
-            <path d="M12 13a4 4 0 1 0-4-4 4 4 0 0 0 4 4Z" stroke="currentColor" strokeWidth="2" strokeLinejoin="round" />
-          </svg>
-        )}
+        {icon === 'home' && <svg width="26" height="26" viewBox="0 0 24 24" fill="none"><path d="M3 10.5 12 3l9 7.5V21a1 1 0 0 1-1 1h-5v-7H9v7H4a1 1 0 0 1-1-1V10.5Z" stroke="currentColor" strokeWidth="2" strokeLinejoin="round" /></svg>}
+        {icon === 'book' && <svg width="26" height="26" viewBox="0 0 24 24" fill="none"><path d="M6 3h11a2 2 0 0 1 2 2v15a1 1 0 0 1-1 1H7a2 2 0 0 0-2 2V5a2 2 0 0 1 2-2Z" stroke="currentColor" strokeWidth="2" strokeLinejoin="round" /><path d="M5 5v16" stroke="currentColor" strokeWidth="2" strokeLinejoin="round" /></svg>}
+        {icon === 'user' && <svg width="26" height="26" viewBox="0 0 24 24" fill="none"><path d="M20 21a8 8 0 1 0-16 0" stroke="currentColor" strokeWidth="2" strokeLinecap="round" /><path d="M12 13a4 4 0 1 0-4-4 4 4 0 0 0 4 4Z" stroke="currentColor" strokeWidth="2" strokeLinejoin="round" /></svg>}
       </span>
       <span className={styles.navLabel}>{label}</span>
       {active ? <span className={styles.navDot} aria-hidden="true" /> : <span className={styles.navDotSpacer} />}

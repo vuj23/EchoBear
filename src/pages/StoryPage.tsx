@@ -4,6 +4,7 @@ import { useState, useRef, useEffect, useCallback } from 'react'
 import { useNavigate, useLocation } from 'react-router-dom'
 import type { StoryJSON } from '../types'
 import { generateImage } from '../api/groq'
+import { saveStory, saveLearnedWord } from '../utils/storyStorage'
 
 type NavItem = 'home' | 'library' | 'profile'
 type Phase = 'reading' | 'practicing'
@@ -104,14 +105,19 @@ export default function StoryPage() {
   const isLastPage = pageIndex >= story.scenes.length - 1
   const wordParts = scene?.wordSplit?.split('—') ?? [scene?.targetWord ?? '']
 
-  // Reset practice when page changes
+  // Save to library on first load
   useEffect(() => {
+    saveStory(story, imageUrls)
+  }, []) // eslint-disable-line react-hooks/exhaustive-deps
+
+  function goToPage(index: number) {
+    recognitionRef.current?.stop()
+    setPageIndex(index)
     setPhase('reading')
     setPracticeResult('idle')
     setHeardWord('')
     setIsListening(false)
-    recognitionRef.current?.stop()
-  }, [pageIndex])
+  }
 
   const playStoryText = useCallback(async (text: string) => {
     // Cancel any in-flight request and stop current audio
@@ -168,7 +174,7 @@ export default function StoryPage() {
 
   function advanceScene() {
     if (isLastPage) navigate('/')
-    else setPageIndex(i => i + 1)
+    else goToPage(pageIndex + 1)
   }
 
   function handleNextClick() {
@@ -202,7 +208,10 @@ export default function StoryPage() {
       setHeardWord(spoken)
       const correct = spoken.includes(scene.targetWord.toLowerCase())
       setPracticeResult(correct ? 'correct' : 'wrong')
-      if (correct) setTimeout(() => advanceScene(), 1400)
+      if (correct) {
+        saveLearnedWord(scene.targetWord)
+        setTimeout(() => advanceScene(), 1400)
+      }
       setIsListening(false)
     }
     rec.onend = () => setIsListening(false)
