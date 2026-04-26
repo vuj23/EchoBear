@@ -1,7 +1,8 @@
 import styles from './Home.module.css'
 import { useState, useRef } from 'react'
 import { useNavigate } from 'react-router-dom'
-import { generateStory, generateImages } from '../api/groq'
+import { generateStory } from '../api/groq'
+import { generateBrainrotStory, getBrainrotImages } from '../api/brainrot'
 
 type NavItem = 'home' | 'library' | 'profile'
 
@@ -47,6 +48,19 @@ export default function Home() {
     setIsListening(true)
   }
 
+  async function handleBrainrot() {
+    if (isLoading) return
+    setIsLoading(true)
+    setError(null)
+    try {
+      const story = await generateBrainrotStory()
+      navigate('/story', { state: { story, images: getBrainrotImages() } })
+    } catch (e) {
+      setError(e instanceof Error ? e.message : 'Failed to generate story')
+      setIsLoading(false)
+    }
+  }
+
   async function handleGenerate() {
     const prompt = transcript.trim()
     if (!prompt || isLoading) return
@@ -54,8 +68,7 @@ export default function Home() {
     setError(null)
     try {
       const story = await generateStory(prompt, 2)
-      const images = await generateImages(story.scenes.map(s => s.imagePrompt))
-      navigate('/story', { state: { story, images } })
+      navigate('/story', { state: { story } })
     } catch (e) {
       setError(e instanceof Error ? e.message : 'Failed to generate story')
       setIsLoading(false)
@@ -110,6 +123,14 @@ export default function Home() {
             ) : null}
 
             {error && <p className={styles.errorText}>{error}</p>}
+
+            <button
+              className={styles.brainrotBtn}
+              type="button"
+              onClick={handleBrainrot}
+            >
+              🥁 Tung Tung Mode
+            </button>
           </div>
         </section>
 

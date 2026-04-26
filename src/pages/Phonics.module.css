@@ -243,6 +243,41 @@
   text-align: center;
 }
 
+.phonemeRow {
+  display: flex;
+  gap: 12px;
+  flex-wrap: wrap;
+  justify-content: center;
+}
+
+.phoneme {
+  background: #f0e8d8;
+  border: 2px solid #d4b48a;
+  border-radius: 12px;
+  padding: 6px 14px;
+  font-size: 28px;
+  font-weight: 800;
+  color: #8B6E4E;
+}
+
+.progressLabel {
+  font-size: 13px;
+  font-weight: 700;
+  color: #a07848;
+  display: block;
+  text-align: right;
+  margin-top: 4px;
+}
+
+.feedback {
+  font-size: 22px;
+  font-weight: 700;
+  text-align: center;
+  padding: 12px 20px;
+  border-radius: 16px;
+  background: #f9f3eb;
+}
+
 /* Next Button */
 .nextButton {
   width: 100px;

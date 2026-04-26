@@ -7,26 +7,52 @@ const MODEL = 'llama-3.1-8b-instant'
 
 function buildPrompt(userPrompt: string, level: number): string {
   const config = LEVEL_CONFIGS[level]
-  const example = `{"title":"The Moon Cat","scenes":[{"storyText":"A big cat sat on the moon.","pauseText":"The cat was...","targetWord":"big","wordSplit":"b—ig","phonemes":["b","i","g"],"imagePrompt":"A large fluffy cat sitting on the moon, stars all around, children's book illustration"},{"storyText":"The cat saw the stars shine.","pauseText":"","targetWord":"","wordSplit":"","phonemes":[],"imagePrompt":"A cat looking up at glowing stars on the moon surface, children's book style"}]}`
 
-  return `You are a children's story generator. Output ONLY valid JSON — no markdown, no explanation.
+  return `Generate a children's story as a single JSON object. No markdown, no explanation, just JSON.
 
-Example format:
-${example}
+Topic: ${userPrompt}
+Age: ${config.age}, Level: ${config.level}
+Sentence length: ${config.sentenceLen}
+Target word type: ${config.wordType}
+Number of target words: ${config.wordCount}
+Number of scenes: 6
 
-Generate a story about: "${userPrompt}"
-- Age ${config.age}, Level ${config.level}
-- Sentence length: ${config.sentenceLen}
-- Use exactly ${config.wordCount} target word(s) of type: ${config.wordType}
-- Exactly 4 scenes
-- imagePrompt: vivid scene description for an illustrator
+JSON structure:
+{
+  "title": "Story Title",
+  "scenes": [
+    {
+      "storyText": "Full sentence for this scene.",
+      "pauseText": "Sentence fragment ending before the target word e.g. The cat was...",
+      "targetWord": "big",
+      "wordSplit": "b—ig",
+      "phonemes": ["b", "i", "g"],
+      "imagePrompt": "Vivid scene description for a children's book illustrator"
+    }
+  ]
+}
+
+Story structure (6 scenes must follow this arc):
+1. Introduction — introduce the main character and setting
+2. Setup — something happens or the character wants something
+3. Rising action — the character tries or explores
+4. Challenge — a problem or obstacle appears
+5. Resolution — the character solves it or learns something
+6. Ending — a warm, satisfying conclusion
 
 Rules:
-- targetWord MUST appear verbatim in storyText
-- Spread target words across scenes
-- Scenes without a target word: use "" for targetWord/wordSplit and [] for phonemes
+- Each scene's storyText must be 3–4 sentences long, not just one line
+- Each scene must naturally follow from the previous one — connected narrative, not isolated sentences
+- Use the same characters and setting throughout
+- Exactly 6 scene objects in the scenes array
+- Spread the ${config.wordCount} target word(s) across different scenes
+- targetWord MUST appear verbatim inside storyText
+- wordSplit uses — (em dash) to split syllables e.g. "r—ed", "b—ig", "c—at"
+- phonemes is an array of individual sounds e.g. ["r","e","d"]
+- Scenes with no target word: set targetWord and wordSplit to "" and phonemes to []
+- pauseText is only needed when targetWord is non-empty
 
-Output only the JSON object:`
+Output the JSON object now:`
 }
 
 export async function generateStory(userPrompt: string, level: number): Promise<StoryJSON> {
@@ -41,9 +67,8 @@ export async function generateStory(userPrompt: string, level: number): Promise<
     body: JSON.stringify({
       model: MODEL,
       messages: [{ role: 'user', content: buildPrompt(userPrompt, level) }],
-      temperature: 0.85,
-      max_tokens: 2048,
-      response_format: { type: 'json_object' },
+      temperature: 0.7,
+      max_tokens: 3500,
     }),
   })
 
@@ -93,20 +118,17 @@ function sanitiseStory(story: StoryJSON): void {
 
 // ── Images ────────────────────────────────────────────────────
 
-const POLLINATIONS_BASE = 'https://image.pollinations.ai/prompt/'
 const POLLINATIONS_KEY = import.meta.env.VITE_POLLINATIONS_API_KEY as string | undefined
 
-function buildImageUrl(prompt: string): string {
+export function generateImage(prompt: string): string {
   const safe = prompt.trim() || 'A cheerful children storybook scene'
   const core = safe.length > 180 ? safe.slice(0, 180) : safe
   const styled = `${core}, children's book illustration, colorful, friendly, cute, no text`
   const seed = Math.abs(hashStr(safe)) % 99999
-  const token = POLLINATIONS_KEY ? `&token=${encodeURIComponent(POLLINATIONS_KEY)}` : ''
-  return `${POLLINATIONS_BASE}${encodeURIComponent(styled)}?width=768&height=576&seed=${seed}&model=flux&nologo=true${token}`
-}
-
-export function generateImages(prompts: string[]): Promise<(string | null)[]> {
-  return Promise.resolve(prompts.map(p => buildImageUrl(p)))
+  if (POLLINATIONS_KEY) {
+    return `https://gen.pollinations.ai/image/${encodeURIComponent(styled)}?width=512&height=384&seed=${seed}&model=nanobanana&nologo=true&key=${encodeURIComponent(POLLINATIONS_KEY)}`
+  }
+  return `https://image.pollinations.ai/prompt/${encodeURIComponent(styled)}?width=512&height=384&seed=${seed}&model=turbo&nologo=true`
 }
 
 function hashStr(s: string): number {

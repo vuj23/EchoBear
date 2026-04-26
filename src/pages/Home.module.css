@@ -212,6 +212,30 @@
   opacity: 0;
 }
 
+.brainrotBtn {
+  margin-top: 12px;
+  padding: 12px 28px;
+  border-radius: 32px;
+  border: 3px solid #e8a030;
+  background: #fff8e8;
+  color: #c47818;
+  font-size: 18px;
+  font-weight: 800;
+  cursor: pointer;
+  transition: background 0.15s, transform 0.1s;
+  box-shadow: 0 4px 0 #e8a030;
+  letter-spacing: 0.5px;
+}
+
+.brainrotBtn:hover {
+  background: #ffefc0;
+}
+
+.brainrotBtn:active {
+  transform: translateY(2px);
+  box-shadow: 0 2px 0 #e8a030;
+}
+
 @media (max-width: 920px) {
   .main {
     grid-template-columns: 1fr;

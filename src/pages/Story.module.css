@@ -26,15 +26,19 @@
 .contentRow {
   display: flex;
   justify-content: space-between;
-  align-items: center;
-  padding: 0 20px;
+  align-items: flex-start;
+  padding: 4px 24px;
+  gap: 20px;
 }
 
 .storyLine {
-  font-size: 2rem;
+  font-family: 'Nunito', sans-serif;
+  font-size: 1.55rem;
   font-weight: 700;
-  color: #8B6E4E; /* Dark tan/brown text */
-  margin: 5px 0;
+  color: #7a5c38;
+  margin: 0;
+  line-height: 1.75;
+  letter-spacing: 0.01em;
 }
 
 .nextButton {
@@ -110,4 +114,178 @@
 
 .dotDone {
   background: #b0d4e0;
+}
+
+.audioTrigger {
+  background: none;
+  border: none;
+  cursor: pointer;
+  font-size: 1.2rem;
+  margin-left: 8px;
+  vertical-align: middle;
+  opacity: 0.7;
+}
+
+.audioTrigger:hover {
+  opacity: 1;
+}
+
+/* Inline phonics practice panel */
+.practicePanel {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 16px;
+  padding: 28px 24px 20px;
+  background: white;
+  border-radius: 32px;
+  border: 4px solid #e6d5b8;
+  margin: 0 10px;
+}
+
+.practicePrompt {
+  font-size: 1.3rem;
+  font-weight: 700;
+  color: #8b6e4e;
+  text-align: center;
+  margin: 0;
+}
+
+.wordDisplay {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  flex-wrap: wrap;
+  justify-content: center;
+}
+
+.wordPartWrapper {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+}
+
+.syllableSep {
+  font-size: 56px;
+  font-weight: 900;
+  color: #d4b48a;
+  line-height: 1;
+}
+
+.wordPart {
+  font-size: 64px;
+  font-weight: 900;
+  padding: 10px 20px;
+  border-radius: 20px;
+  border: 5px solid;
+  min-width: 70px;
+  text-align: center;
+  line-height: 1.2;
+}
+
+.wordPartBlue {
+  background: #e8f7f8;
+  border-color: #5bb5c0;
+  color: #3a9ba6;
+  box-shadow: 0 7px 0 #3a9ba6;
+}
+
+.wordPartGold {
+  background: #fff3d4;
+  border-color: #d4a840;
+  color: #c49830;
+  box-shadow: 0 7px 0 #c49830;
+}
+
+.phonemeRow {
+  display: flex;
+  gap: 8px;
+  flex-wrap: wrap;
+  justify-content: center;
+}
+
+.phoneme {
+  background: #f0e8d8;
+  border: 2px solid #d4b48a;
+  border-radius: 10px;
+  padding: 4px 14px;
+  font-size: 20px;
+  font-weight: 800;
+  color: #8b6e4e;
+}
+
+.micBtn {
+  width: 80px;
+  height: 80px;
+  border-radius: 50%;
+  border: none;
+  background: #5fb4c7;
+  box-shadow: 0 6px 0 #3e8f99;
+  font-size: 34px;
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  transition: transform 0.1s;
+}
+
+.micBtn:active {
+  transform: translateY(2px);
+}
+
+.micBtnActive {
+  animation: pulse 1s ease-in-out infinite;
+}
+
+@keyframes pulse {
+  0%, 100% { transform: scale(1); }
+  50% { transform: scale(1.08); }
+}
+
+.micLabel {
+  font-size: 0.9rem;
+  font-weight: 700;
+  color: #a07848;
+  margin: 0;
+}
+
+.feedbackCorrect {
+  font-size: 1.1rem;
+  font-weight: 800;
+  color: #4caf50;
+  text-align: center;
+  padding: 8px 16px;
+  background: #f0fff0;
+  border-radius: 12px;
+}
+
+.feedbackWrong {
+  font-size: 1rem;
+  font-weight: 700;
+  color: #e06060;
+  text-align: center;
+  padding: 8px 16px;
+  background: #fff5f5;
+  border-radius: 12px;
+}
+
+.practiceActions {
+  display: flex;
+  justify-content: center;
+}
+
+.skipBtn {
+  background: none;
+  border: 2px solid #d4b48a;
+  border-radius: 20px;
+  padding: 6px 20px;
+  font-size: 14px;
+  font-weight: 700;
+  color: #a07848;
+  cursor: pointer;
+  transition: background 0.15s;
+}
+
+.skipBtn:hover {
+  background: #f5ede0;
 }

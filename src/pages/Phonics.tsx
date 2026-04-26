@@ -1,13 +1,10 @@
 import styles from './Phonics.module.css'
 import { useState, useRef } from 'react'
-import { useNavigate } from 'react-router-dom'
+import { useNavigate, useLocation } from 'react-router-dom'
+import type { StoryJSON } from '../types'
 
 type NavItem = 'home' | 'library' | 'profile'
-
-interface PhonicsWord {
-  text: string
-  parts: string[]
-}
+type Result = 'idle' | 'correct' | 'wrong'
 
 declare global {
   interface Window {
@@ -16,24 +13,34 @@ declare global {
   }
 }
 
+const FALLBACK_WORDS = [
+  { targetWord: 'red', wordSplit: 'r—ed', phonemes: ['r', 'e', 'd'], pauseText: 'The flower was...' },
+  { targetWord: 'big', wordSplit: 'b—ig', phonemes: ['b', 'i', 'g'], pauseText: 'The cat was...' },
+]
+
 export default function Phonics() {
   const [active, setActive] = useState<NavItem>('home')
+  const [wordIndex, setWordIndex] = useState(0)
   const [isListening, setIsListening] = useState(false)
-  // eslint-disable-next-line @typescript-eslint/no-explicit-any
+  const [result, setResult] = useState<Result>('idle')
+  const [heard, setHeard] = useState('')
   const recognitionRef = useRef<any>(null)
   const navigate = useNavigate()
+  const location = useLocation()
 
-  const word: PhonicsWord = {
-    text: 'red',
-    parts: ['r', 'ed'],
-  }
+  const state = location.state as { story: StoryJSON } | null
+  const words = state?.story?.scenes
+    .filter(s => s.targetWord)
+    .map(s => ({
+      targetWord: s.targetWord,
+      wordSplit: s.wordSplit,
+      phonemes: s.phonemes,
+      pauseText: s.pauseText || s.storyText,
+    })) ?? FALLBACK_WORDS
 
-  const handleNavClick = (key: NavItem) => {
-    setActive(key)
-    if (key === 'home') navigate('/')
-    if (key === 'library') navigate('/library')
-    if (key === 'profile') navigate('/profile')
-  }
+  const current = words[wordIndex]
+  const parts = current?.wordSplit?.split('—') ?? [current?.targetWord ?? '']
+  const isLast = wordIndex >= words.length - 1
 
   function handleMicClick() {
     if (isListening) {
@@ -45,77 +52,129 @@ export default function Phonics() {
     const SR = window.SpeechRecognition || window.webkitSpeechRecognition
     if (!SR) return
 
-    // eslint-disable-next-line @typescript-eslint/no-explicit-any
+    setResult('idle')
+    setHeard('')
+
     const rec = new (SR as any)()
     rec.lang = 'en-US'
     rec.continuous = false
     rec.interimResults = false
-    rec.onresult = () => {
+
+    rec.onresult = (e: any) => {
+      const spoken = e.results[0][0].transcript.trim().toLowerCase()
+      setHeard(spoken)
+      const target = current.targetWord.toLowerCase()
+      setResult(spoken.includes(target) ? 'correct' : 'wrong')
       setIsListening(false)
     }
+
     rec.onend = () => setIsListening(false)
-    rec.onerror = () => setIsListening(false)
+    rec.onerror = () => { setIsListening(false); setResult('wrong') }
     recognitionRef.current = rec
     rec.start()
     setIsListening(true)
   }
 
+  function handleNext() {
+    if (!isLast) {
+      setWordIndex(i => i + 1)
+      setResult('idle')
+      setHeard('')
+    } else {
+      navigate('/')
+    }
+  }
+
+  const handleNavClick = (key: NavItem) => {
+    setActive(key)
+    if (key === 'home') navigate('/')
+    if (key === 'library') navigate('/library')
+    if (key === 'profile') navigate('/profile')
+  }
+
+  if (!current) {
+    return (
+      <div className={styles.screen}>
+        <div className={styles.container}>
+          <p style={{ textAlign: 'center', color: '#8B6E4E', marginTop: 60 }}>
+            No target words in this story.
+          </p>
+          <button onClick={() => navigate('/')} style={{ margin: '20px auto', display: 'block' }}>Go Home</button>
+        </div>
+      </div>
+    )
+  }
+
   return (
     <div className={styles.screen}>
       <div className={styles.container}>
-        {/* Header with back button and progress */}
         <div className={styles.header}>
-          <button className={styles.backButton} onClick={() => navigate(-1)}>
-            ‹
-          </button>
-
+          <button className={styles.backButton} onClick={() => navigate(-1)}>‹</button>
           <div className={styles.progressContainer}>
             <div className={styles.progressBar}>
-              <div className={styles.progressFill} style={{ width: '45%' }}></div>
+              <div
+                className={styles.progressFill}
+                style={{ width: `${((wordIndex + 1) / words.length) * 100}%` }}
+              />
             </div>
+            <span className={styles.progressLabel}>{wordIndex + 1} / {words.length}</span>
           </div>
-
-          <button className={styles.readAloudButton}>🔊</button>
+          <div style={{ width: 40 }} />
         </div>
 
-        {/* Story context */}
-        <h1 className={styles.storyContext}>The flower was...</h1>
+        <h1 className={styles.storyContext}>"{current.pauseText}"</h1>
 
-        {/* Main content area */}
         <div className={styles.mainContent}>
-          {/* Mic button */}
           <div className={styles.micSection}>
             <button
               className={`${styles.micButton} ${isListening ? styles.micButtonActive : ''}`}
               onClick={handleMicClick}
             >
-              🎤
+              {isListening ? '🎙️' : '🎤'}
             </button>
-            <p className={styles.micLabel}>Tap to speak</p>
+            <p className={styles.micLabel}>{isListening ? 'Listening…' : 'Tap to speak'}</p>
           </div>
 
-          {/* Word card */}
           <div className={styles.wordCard}>
             <div className={styles.wordContainer}>
-              {word.parts.map((part, index) => (
-                <div key={index} className={styles.wordPartWrapper}>
-                  {index > 0 && <div className={styles.syllableSeparator}>—</div>}
-                  <div className={`${styles.wordPart} ${index === 0 ? styles.wordPartBlue : styles.wordPartGold}`}>
+              {parts.map((part, i) => (
+                <div key={i} className={styles.wordPartWrapper}>
+                  {i > 0 && <div className={styles.syllableSeparator}>—</div>}
+                  <div className={`${styles.wordPart} ${i === 0 ? styles.wordPartBlue : styles.wordPartGold}`}>
                     {part}
                   </div>
                 </div>
               ))}
             </div>
 
+            {current.phonemes.length > 0 && (
+              <div className={styles.phonemeRow}>
+                {current.phonemes.map((p, i) => (
+                  <span key={i} className={styles.phoneme}>{p}</span>
+                ))}
+              </div>
+            )}
+
             <p className={styles.wordPrompt}>Can you say this word?</p>
+
+            {result === 'correct' && (
+              <div className={styles.feedback} style={{ color: '#4caf50' }}>
+                ✅ Great job! You said "{heard}"
+              </div>
+            )}
+            {result === 'wrong' && (
+              <div className={styles.feedback} style={{ color: '#e06060' }}>
+                ❌ I heard "{heard}" — try saying <strong>{current.targetWord}</strong>
+              </div>
+            )}
           </div>
 
-          {/* Next button */}
-          <button className={styles.nextButton}>›</button>
+          <button className={styles.nextButton} onClick={handleNext}>
+            {isLast ? '🏠' : '›'}
+          </button>
         </div>
       </div>
 
-      {/* Navigation */}
       <footer className={styles.nav}>
         <NavButton active={active === 'home'} onClick={() => handleNavClick('home')} label="HOME" icon="home" />
         <NavButton active={active === 'library'} onClick={() => handleNavClick('library')} label="LIBRARY" icon="book" />
@@ -128,44 +187,26 @@ export default function Phonics() {
 function NavButton({ active, label, icon, onClick }: { active: boolean; label: string; icon: 'home' | 'book' | 'user'; onClick?: () => void }) {
   return (
     <button
-      className={`nav-button ${active ? 'active' : ''}`}
       type="button"
       onClick={onClick}
       style={{
-        flex: 1,
-        display: 'flex',
-        flexDirection: 'column',
-        alignItems: 'center',
-        justifyContent: 'center',
-        gap: '8px',
-        background: 'none',
-        border: 'none',
-        cursor: 'pointer',
-        color: active ? '#5bb5c0' : '#d4b48a',
-        fontSize: '14px',
-        fontWeight: '800',
-        textTransform: 'uppercase',
-        letterSpacing: '0.85px',
-        position: 'relative',
+        flex: 1, display: 'flex', flexDirection: 'column', alignItems: 'center',
+        justifyContent: 'center', gap: '8px', background: 'none', border: 'none',
+        cursor: 'pointer', color: active ? '#5bb5c0' : '#d4b48a', fontSize: '14px',
+        fontWeight: '800', textTransform: 'uppercase', letterSpacing: '0.85px', position: 'relative',
       }}
     >
-      <span style={{ fontSize: '26px' }}>
-        {icon === 'home' && '🏠'}
-        {icon === 'book' && '📚'}
-        {icon === 'user' && '👤'}
+      <span style={{ display: 'grid', placeItems: 'center' }}>
+        {icon === 'home' && <svg width="26" height="26" viewBox="0 0 24 24" fill="none"><path d="M3 10.5 12 3l9 7.5V21a1 1 0 0 1-1 1h-5v-7H9v7H4a1 1 0 0 1-1-1V10.5Z" stroke="currentColor" strokeWidth="2" strokeLinejoin="round" /></svg>}
+        {icon === 'book' && <svg width="26" height="26" viewBox="0 0 24 24" fill="none"><path d="M6 3h11a2 2 0 0 1 2 2v15a1 1 0 0 1-1 1H7a2 2 0 0 0-2 2V5a2 2 0 0 1 2-2Z" stroke="currentColor" strokeWidth="2" strokeLinejoin="round" /><path d="M5 5v16" stroke="currentColor" strokeWidth="2" strokeLinejoin="round" /></svg>}
+        {icon === 'user' && <svg width="26" height="26" viewBox="0 0 24 24" fill="none"><path d="M20 21a8 8 0 1 0-16 0" stroke="currentColor" strokeWidth="2" strokeLinecap="round" /><path d="M12 13a4 4 0 1 0-4-4 4 4 0 0 0 4 4Z" stroke="currentColor" strokeWidth="2" strokeLinejoin="round" /></svg>}
       </span>
       <span>{label}</span>
       {active && (
-        <div
-          style={{
-            position: 'absolute',
-            bottom: '-4px',
-            width: '7px',
-            height: '7px',
-            background: '#5bb5c0',
-            borderRadius: '50%',
-          }}
-        />
+        <div style={{
+          position: 'absolute', bottom: '-4px', width: '7px', height: '7px',
+          background: '#5bb5c0', borderRadius: '50%',
+        }} />
       )}
     </button>
   )
