@@ -1,4 +1,4 @@
-# Bobby the Story Bot
+# Echo Bear
 
 A children's reading literacy app built with React, TypeScript, and Vite. The app helps kids practice reading by reading stories aloud and prompting them to read specific words, with visual aids and speech recognition.
 
