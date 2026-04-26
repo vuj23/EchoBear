@@ -1,7 +1,7 @@
 import styles from './Home.module.css'
 import { useState, useRef } from 'react'
 import { useNavigate } from 'react-router-dom'
-import { generateStory, generateImages } from '../api/gemini'
+import { generateStory, generateImages } from '../api/groq'
 
 type NavItem = 'home' | 'library' | 'profile'
 

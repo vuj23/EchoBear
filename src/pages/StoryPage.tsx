@@ -1,10 +1,13 @@
 import styles from './Story.module.css'
 import navStyles from './Home.module.css'
-import { useState, useRef } from 'react'
+import { useState, useRef, useEffect, useCallback } from 'react'
 import { useNavigate, useLocation } from 'react-router-dom'
 import type { StoryJSON } from '../types'
 
 type NavItem = 'home' | 'library' | 'profile'
+
+const ELEVEN_API_KEY = import.meta.env.VITE_ELEVENLABS_API_KEY
+const ELEVEN_VOICE_ID = '4Mhjd1Q9JRWcKfDQvn26'
 
 const FALLBACK_STORY: StoryJSON = {
   title: 'The Little Red Flower',
@@ -15,24 +18,26 @@ const FALLBACK_STORY: StoryJSON = {
   ],
 }
 
-// key={pageIndex} on this component forces a full remount on scene change,
-// naturally resetting loaded/failed state with no useEffect needed.
 function SceneImage({ src, index }: { src: string | null; index: number }) {
   const [loaded, setLoaded] = useState(false)
-  const [failed, setFailed] = useState(false)
+  const [currentSrc, setCurrentSrc] = useState(src)
+  const [permanentFail, setPermanentFail] = useState(false)
   const retryCount = useRef(0)
 
   function handleError() {
     if (retryCount.current < 2) {
       retryCount.current += 1
-      setFailed(true)
-      setTimeout(() => setFailed(false), retryCount.current * 4000)
+      const n = retryCount.current
+      setTimeout(() => {
+        setLoaded(false)
+        setCurrentSrc(src ? `${src}&_r=${n}` : null)
+      }, n * 4000)
     } else {
-      setFailed(true)
+      setPermanentFail(true)
     }
   }
 
-  if (!src || failed) {
+  if (!currentSrc || permanentFail) {
     return (
       <div className={styles.imagePlaceholder}>
         {(['🌟', '🌈', '🦋', '🌺'] as const)[index % 4]}
@@ -48,7 +53,7 @@ function SceneImage({ src, index }: { src: string | null; index: number }) {
         </div>
       )}
       <img
-        src={src}
+        src={currentSrc}
         alt={`Scene ${index + 1}`}
         referrerPolicy="no-referrer"
         className={styles.sceneImage}
@@ -62,6 +67,10 @@ function SceneImage({ src, index }: { src: string | null; index: number }) {
 
 export default function StoryPage() {
   const [active, setActive] = useState<NavItem>('home')
+  const [pageIndex, setPageIndex] = useState(0)
+
+  const audioRef = useRef<HTMLAudioElement | null>(null)
+  const isAudioLoadingRef = useRef(false)
   const navigate = useNavigate()
   const location = useLocation()
 
@@ -69,11 +78,55 @@ export default function StoryPage() {
   const story = state?.story ?? FALLBACK_STORY
   const imageUrls = state?.images ?? story.scenes.map(() => null)
 
-  const [pageIndex, setPageIndex] = useState(0)
-
   const scene = story.scenes[pageIndex]
   const image = imageUrls[pageIndex] ?? null
   const isLastPage = pageIndex >= story.scenes.length - 1
+
+  const playStoryText = useCallback(async (text: string) => {
+    if (audioRef.current) {
+      audioRef.current.pause()
+      audioRef.current = null
+    }
+
+    try {
+      isAudioLoadingRef.current = true
+
+      const res = await fetch(
+        `https://api.elevenlabs.io/v1/text-to-speech/${ELEVEN_VOICE_ID}`,
+        {
+          method: 'POST',
+          headers: {
+            'Accept': 'audio/mpeg',
+            'Content-Type': 'application/json',
+            'xi-api-key': ELEVEN_API_KEY,
+          },
+          body: JSON.stringify({
+            text,
+            model_id: 'eleven_flash_v2_5',
+            voice_settings: { stability: 0.5, similarity_boost: 0.75, speed: 0.8, style: 0.0, use_speaker_boost: true },
+          }),
+        }
+      )
+
+      const blob = await res.blob()
+      const url = URL.createObjectURL(blob)
+      const audio = new Audio(url)
+      audioRef.current = audio
+      isAudioLoadingRef.current = false
+      audio.play()
+      audio.onended = () => URL.revokeObjectURL(url)
+    } catch (error) {
+      console.error('ElevenLabs error:', error)
+      isAudioLoadingRef.current = false
+    }
+  }, [])
+
+  useEffect(() => {
+    if (scene?.storyText) {
+      playStoryText(scene.storyText)
+    }
+    return () => { audioRef.current?.pause() }
+  }, [scene?.storyText, playStoryText])
 
   return (
     <div>
@@ -84,7 +137,16 @@ export default function StoryPage() {
 
         <div className={styles.contentRow}>
           <div className={styles.textContent}>
-            <p className={styles.storyLine}>{scene?.storyText}</p>
+            <p className={styles.storyLine}>
+              {scene?.storyText}
+              <button
+                className={styles.audioTrigger}
+                onClick={() => playStoryText(scene.storyText)}
+                aria-label="Replay audio"
+              >
+                🔊
+              </button>
+            </p>
           </div>
           <button
             className={styles.nextButton}
