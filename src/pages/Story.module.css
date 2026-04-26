@@ -14,11 +14,12 @@
 
 .imageCard {
   width: 100%;
-  aspect-ratio: 16 / 7; /* Adjust based on your screenshot */
+  aspect-ratio: 16 / 7;
   background: white;
-  border: 4px solid #E6D5B8; /* The tan border color */
+  border: 4px solid #E6D5B8;
   border-radius: 40px;
   overflow: hidden;
+  position: relative;
 }
 
 /* For the story text and button layout */
@@ -52,4 +53,61 @@
 
 .nextButton:hover {
   transform: scale(1.05);
+}
+
+.sceneImage {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+  display: block;
+}
+
+.imagePlaceholder {
+  width: 100%;
+  height: 100%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 72px;
+  background: #f5ede0;
+  position: absolute;
+  inset: 0;
+}
+
+.imageSpinner {
+  width: 48px;
+  height: 48px;
+  border: 5px solid #e0cfbb;
+  border-top-color: #82bdd0;
+  border-radius: 50%;
+  animation: spin 0.8s linear infinite;
+  font-size: 0;
+}
+
+@keyframes spin {
+  to { transform: rotate(360deg); }
+}
+
+.dots {
+  display: flex;
+  justify-content: center;
+  gap: 8px;
+  padding: 0 20px;
+}
+
+.dot {
+  width: 10px;
+  height: 10px;
+  border-radius: 50%;
+  background: #d9c4aa;
+  display: inline-block;
+  transition: background 0.2s;
+}
+
+.dotActive {
+  background: #82bdd0;
+}
+
+.dotDone {
+  background: #b0d4e0;
 }
